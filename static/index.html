@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ticket System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>🎫 Ticket Management System</h1>
+
+    <div class="card form-card">
+        <h2>Create Ticket</h2>
+
+        <input type="text" id="name" placeholder="Ticket Name">
+        <input type="text" id="desc" placeholder="Description">
+
+        <select id="category">
+            <option value="">Select Category</option>
+            <option value="IT">IT</option>
+            <option value="HR">HR</option>
+            <option value="Finance">Finance</option>
+        </select>
+
+        <button onclick="createTicket()">Create Ticket</button>
+    </div>
+
+    <div class="card">
+        <h2>All Tickets</h2>
+        <div id="tickets"></div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
+
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <title>Ticket Management System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+    <h1>🎫 Ticket Management System</h1>
+    <p>Create and manage support tickets easily</p>
+</header>
+
+<div class="container">
+
+    <div class="card form-card">
+        <h2>Create Ticket</h2>
+
+        <input type="text" id="name" placeholder="Ticket Name">
+        <textarea id="desc" placeholder="Ticket Description"></textarea>
+
+        <select id="category">
+            <option value="IT">IT Department</option>
+            <option value="HR">HR Department</option>
+            <option value="Finance">Finance Department</option>
+        </select>
+
+        <button onclick="createTicket()">Create Ticket</button>
+    </div>
+
+    <div class="card">
+        <h2>All Tickets</h2>
+        <div id="tickets" class="tickets-grid"></div>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html> -->
