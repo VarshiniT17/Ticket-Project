@@ -11,54 +11,63 @@ async function createTicket() {
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ name, description, category })
+        body: JSON.stringify({
+            Name: name,
+            Description: description,
+            Category: category
+        })
     });
 
     if (res.ok) {
-        alert("Ticket created!");
-        loadTickets();
+        const data = await res.json();
+
+        alert(`🎉 Ticket Created Successfully!
+
+Ticket ID: ${data.TicketID}
+Ticket Number: ${data.TicketNumber}`);
+
     } else {
-        alert("Error creating ticket");
+        alert("❌ Error creating ticket");
     }
+
     document.getElementById("name").value = "";
     document.getElementById("desc").value = "";
+    document.getElementById("category").value = "";
 }
 
-// LOAD TICKETS
-async function loadTickets() {
-    const res = await fetch(`${API}/api/tickets`);
-    const data = await res.json();
 
-    const container = document.getElementById("tickets");
-    container.innerHTML = "";
+// TRACK TICKET BY ID
+async function trackTicket() {
+    const id = document.getElementById("trackId").value;
+    const container = document.getElementById("trackResult");
 
-    if (data.length === 0) {
-        container.innerHTML = "<p>No tickets yet 🚀</p>";
+    if (!id) {
+        container.innerHTML = "<p>⚠️ Please enter ticket ID</p>";
         return;
     }
 
-    data.forEach(t => {
-        container.innerHTML += `
-            <div class="ticket">
-                <b>${t.Name}</b> (${t.Category})<br>
-                ${t.Description}<br><br>
-                👤 Assigned: ${t.AssignedTo}<br>
-                📌 Status: ${t.Status}<br>
-                🕒 ${t.CreatedAt}
-            </div>
-        `;
+    const res = await fetch(`${API}/api/ticket/id/${id}`);
 
-        /* container.innerHTML += `
-    <div class="ticket">
-        <h3>${t.Name}</h3>
-        <p><strong>Category:</strong> ${t.Category}</p>
-        <p><strong>Description:</strong> ${t.Description}</p>
-        <p><strong>Assigned:</strong> ${t.AssignedTo}</p>
-        <p><strong>Status:</strong> ${t.Status}</p>
-    </div>
-`; */
-    });
+    container.innerHTML = "";
+
+    if (!res.ok) {
+        container.innerHTML = "<p>❌ Ticket not found</p>";
+        return;
+    }
+
+    const t = await res.json();
+
+    container.innerHTML = `
+        <div class="ticket">
+            <b>${t.Name}</b> (${t.Category})<br>
+            ${t.Description}<br><br>
+            👤 Assigned: ${t.AssignedTo}<br>
+            📌 Status: ${t.Status}<br>
+            🕒 ${t.CreatedAt}
+        </div>
+    `;
 }
-
-// Load on start
-loadTickets();
+function clearTracking() {
+    document.getElementById("trackId").value = "";
+    document.getElementById("trackResult").innerHTML = "";
+}

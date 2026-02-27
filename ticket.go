@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -47,6 +48,7 @@ var admins = []Admin{
 // LOGIC FUNCTIONS
 //////////////////////////////////////////////////////
 
+// Generate unique 4-digit ticket number per category
 func generateTicketNumber(category string) int {
 	for {
 		num := rand.Intn(9000) + 1000
@@ -62,6 +64,7 @@ func generateTicketNumber(category string) int {
 	}
 }
 
+// Assign admin based on category
 func assignAdmin(category string) string {
 	for _, admin := range admins {
 		if strings.EqualFold(admin.Category, category) {
@@ -71,6 +74,7 @@ func assignAdmin(category string) string {
 	return "No Admin Found"
 }
 
+// Validate category
 func isValidCategory(category string) bool {
 	for _, admin := range admins {
 		if strings.EqualFold(admin.Category, category) {
@@ -93,6 +97,7 @@ func enableCORS(w http.ResponseWriter) {
 // HANDLERS
 //////////////////////////////////////////////////////
 
+// CREATE TICKET
 func createTicketHandler(w http.ResponseWriter, r *http.Request) {
 	enableCORS(w)
 
@@ -102,7 +107,11 @@ func createTicketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var input Ticket
-	json.NewDecoder(r.Body).Decode(&input)
+	err := json.NewDecoder(r.Body).Decode(&input)
+	if err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
 
 	if input.Name == "" || input.Description == "" || !isValidCategory(input.Category) {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
@@ -129,9 +138,33 @@ func createTicketHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(ticket)
 }
 
-func getTicketsHandler(w http.ResponseWriter, r *http.Request) {
+// TRACK TICKET BY ID
+func getTicketByIDHandler(w http.ResponseWriter, r *http.Request) {
 	enableCORS(w)
-	json.NewEncoder(w).Encode(tickets)
+
+	// Expected URL: /api/ticket/id/{id}
+	parts := strings.Split(r.URL.Path, "/")
+	if len(parts) < 5 {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	idStr := parts[4]
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ticket ID", http.StatusBadRequest)
+		return
+	}
+
+	for _, t := range tickets {
+		if t.TicketID == id {
+			json.NewEncoder(w).Encode(t)
+			return
+		}
+	}
+
+	http.Error(w, "Ticket not found", http.StatusNotFound)
 }
 
 //////////////////////////////////////////////////////
@@ -141,14 +174,14 @@ func getTicketsHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	// Serve static files
+	// Serve static frontend files
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/", fs)
 
-	// APIs
+	// API Routes
 	http.HandleFunc("/api/create", createTicketHandler)
-	http.HandleFunc("/api/tickets", getTicketsHandler)
+	http.HandleFunc("/api/ticket/id/", getTicketByIDHandler)
 
-	fmt.Println("Server running on http://localhost:8080")
+	fmt.Println("🚀 Server running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
 }
